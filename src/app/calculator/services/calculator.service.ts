@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 
 
-const numbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 const operators = ['+', '-', '*', '/', '%'];
 const specialOperators = [
   '+/-', '%', '.', '=', 'C', 'Backspace'
@@ -24,7 +24,7 @@ export class CalculatorService {
     }
 
     if (value === '=') {
-      console.log('Caluclar resultado');
+      this.calculateResult();
       return;
     }
 
@@ -38,6 +38,12 @@ export class CalculatorService {
     //Backspace
     if (value === 'Backspace') {
       if (this.resultText() === '0') return;
+
+      if (this.resultText().includes('-') && this.resultText().length === 2) {
+        this.resultText.set('0');
+        return;
+      }
+
       if (this.resultText().length === 1) {
         this.resultText.set('0');
         return;
@@ -55,15 +61,88 @@ export class CalculatorService {
       return;
     }
 
-    if (value === '.' && !this.resultText().includes('.')) {
-      if (this.resultText() === '0' || this.resultText() === '') {
-        this.resultText.update(prev => prev + '0.');
-      }
+    // Limitar numeros de caracteres 
+    if (this.resultText().length > 10) {
+      console.log('Max length reached');
       return;
     }
 
-    this.resultText.update(text => text + '.');
-    return;
+
+    if (value === '.' && !this.resultText().includes('.')) {
+      if (this.resultText() === '0' || this.resultText() === '') {
+        this.resultText.set("0.");
+        return;
+      }
+      this.resultText.update(text => text + '.');
+      return;
+    }
+
+    //Manejo del 0 inicial 
+
+    if (value === '0' && (this.resultText() === '0' || this.resultText() === '-0')) {
+      console.log('salta');
+      return;
+    }
+
+    // Cambiar signo
+    if (value === '+/-') {
+      if (this.resultText().includes('-')) {
+        this.resultText.update(prev => prev.slice(1));
+        return;
+      }
+
+      this.resultText.update(text => "-" + text);
+      return;
+    }
+
+    //Numeros
+    if (numbers.includes(value)) {
+      if (this.resultText() === "0") {
+        this.resultText.set(value);
+        return;
+      }
+
+      if (this.resultText() === '-0') {
+        this.resultText.set('-' + value);
+        return;
+      }
+
+      this.resultText.update(prev => prev + value);
+      return;
+    }
+
+  }
+
+
+  public calculateResult() {
+    const number1 = parseFloat(this.subResultText());
+    const number2 = parseFloat(this.resultText());
+
+    let result = 0;
+
+    switch (this.lastOperator()) {
+      case '+':
+        result = number1 + number2;
+        break;
+      case '-':
+        result = number1 - number2;
+        break;
+      case '*':
+        result = number1 * number2;
+        break;
+      case 'x':
+        result = number1 * number2;
+        break;
+      case '/':
+        result = number1 / number2;
+        break;
+      case '÷':
+        result = number1 / number2;
+        return;
+    }
+
+    this.resultText.set(result.toString());
+    this.subResultText.set('0');
   }
 
 }

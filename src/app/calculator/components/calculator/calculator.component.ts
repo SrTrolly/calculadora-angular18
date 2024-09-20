@@ -35,7 +35,7 @@ export class CalculatorComponent {
   // }
 
   handleClick(key: string) {
-    console.log({ key });
+    this.calculatorService.construcNumber(key);
 
   }
 
@@ -45,7 +45,7 @@ export class CalculatorComponent {
     const keyEquivalents: Record<string, string> = {
       Escape: 'C',
       Clear: 'C',
-      '*': 'x',
+      X: '*',
       '/': '÷',
       Enter: '='
     }
